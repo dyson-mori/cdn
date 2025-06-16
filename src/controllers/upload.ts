@@ -6,17 +6,18 @@ import multer from 'multer';
 
 // 🛠 Criar pastas
 const basePath = path.join(__dirname, '..', '..', 'uploads');
-const originalPath = path.join(basePath, 'original');
+// const originalPath = path.join(basePath, 'original');
 const previewPath = path.join(basePath, 'preview');
 const hlsPath = path.join(basePath, 'hls');
 
-[originalPath, previewPath, hlsPath].forEach(dir => fs.mkdirSync(dir, { recursive: true }));
+[previewPath, hlsPath].forEach(dir => fs.mkdirSync(dir, { recursive: true }));
 
 // 📁 Configurar upload
 const storage = multer.diskStorage({
-  destination: (_, __, cb) => cb(null, originalPath),
+  // destination: (_, __, cb) => cb(null, previewPath),
   filename: (_, file, cb) => cb(null, `${file.originalname}`),
 });
+
 export const upload = multer({ storage });
 
 // 🎬 Gerar preview de 2 segundos
@@ -27,7 +28,7 @@ const generatePreview = (input: string, outputName: string): Promise<string> => 
       .setStartTime('00:00:00')
       .duration(2)
       .output(output)
-      .size('640x360')
+      // .size('640x360')
       .on('end', () => resolve(output))
       .on('error', reject)
       .run();
@@ -56,16 +57,27 @@ const generateHLS = (input: string, folderName: string): Promise<string> => {
   });
 };
 
+function getVideoSize(filePath: string): Promise<{ width: number; height: number }> {
+  return new Promise((resolve, reject) => {
+    ffmpeg.ffprobe(filePath, (err, metadata) => {
+      if (err) return reject(err);
+      const stream = metadata.streams.find(s => s.width && s.height);
+      if (!stream) return reject(new Error('Dimensões não encontradas no vídeo.'));
+      resolve({ width: stream.width!, height: stream.height! });
+    });
+  });
+}
+
 // 🚀 Handler principal
 export const handleUpload = async (req: Request, res: Response) => {
   const file = req.file;
+
   if (!file) {
     res.status(400).json({ error: 'Arquivo não enviado.' });
     return;
   }
 
   const timestamp = Date.now().toString();
-  const filenameNoExt = path.parse(file.filename).name;
 
   try {
     // Preview
@@ -73,14 +85,16 @@ export const handleUpload = async (req: Request, res: Response) => {
     await generatePreview(file.path, previewName);
 
     // HLS
-    const hlsFolder = `${filenameNoExt}`;
+    const hlsFolder = `${timestamp}`;
     await generateHLS(file.path, hlsFolder);
 
+    const size = await getVideoSize(file.path);
+
     res.status(201).json({
-      message: 'Upload, preview e HLS criados com sucesso!',
-      original: `/uploads/original/${file.filename}`,
+      // original: `/uploads/original/${file.filename}`,
       preview: `/uploads/preview/${previewName}`,
-      hls: `/uploads/hls/${hlsFolder}/index.m3u8`,
+      url: `/uploads/hls/${hlsFolder}/index.m3u8`,
+      ...size
     });
   } catch (err) {
     console.error(err);
