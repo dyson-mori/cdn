@@ -1,0 +1,26 @@
+# Node modules
+node_modules/
+
+# Builds TypeScript
+dist/
+build/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+
+# VSCode configs (opcional)
+.vscode/
+
+# Arquivos de upload
+uploads/
