@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  cdn:
+    build: .
+    ports:
+      - "3030:3030"
+    volumes:
+      # Mapeia a pasta de uploads para persistência no host
+      - ./src/uploads:/app/src/uploads
+    environment:
+      - NODE_ENV=production
+    restart: always
