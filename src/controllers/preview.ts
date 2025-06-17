@@ -15,8 +15,14 @@ export async function handlePreview(request: Request, response: Response) {
   if (!fs.existsSync(filePath)) {
     response.status(404).json({ error: 'Arquivo não encontrado.' });
     return
-  }
+  };
 
-  response.sendFile(filePath);
-  return
+  // if (isPrivate) {
+  //   // response.status(401).send('🔒 Acesso negado ao vídeo privado.');
+  //   response.status(404).json({ error: 'Arquivo não encontrado.' });
+  //   return 
+  // };
+
+  response.setHeader('Content-Type', 'video/mp4');
+  fs.createReadStream(filePath).pipe(response);
 }
