@@ -1,9 +1,13 @@
 import { Router } from 'express';
 
-import { handleUpload, upload } from './controllers';
+import { handleUpload } from './controllers/upload';
+import { handlePreview } from './controllers/preview';
+
+import storage from "./utils/storage";
 
 const route = Router();
 
-route.post('/upload', upload.single('file'), handleUpload);
+route.get('/video/:isPublic', handlePreview);
+route.post('/upload', storage.single('file'), handleUpload);
 
 export { route };
