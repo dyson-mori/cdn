@@ -12,6 +12,9 @@ export async function handleUpload(req: Request, res: Response) {
 
   const timestamp = Date.now().toString();
 
+  // console.log({ timestamp: `tag: ${timestamp}, type: ${typeof timestamp}` });
+  // console.log({ file });
+
   try {
     const previewName = `${timestamp}.mp4`;
     await generatePreview(file.path, previewName);
@@ -23,8 +26,7 @@ export async function handleUpload(req: Request, res: Response) {
     const size = await getVideoSize(file.path);
 
     res.status(201).json({
-      preview: `/uploads/preview/${previewName}`,
-      blur: `/uploads/blur/${previewName}`,
+      preview: `http://localhost:3030/cdn/preview/true/${previewName}`,
       url: `/uploads/hls/${hlsFolder}/index.m3u8`,
       ...size
     });
