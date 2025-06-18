@@ -26,6 +26,7 @@ export async function handleUpload(req: Request, res: Response) {
     const size = await getVideoSize(file.path);
 
     res.status(201).json({
+      cdn_id: timestamp,
       preview: `http://localhost:3030/cdn/preview/true/${previewName}`,
       url: `/uploads/hls/${hlsFolder}/index.m3u8`,
       ...size
